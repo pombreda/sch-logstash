@@ -1,0 +1,9 @@
+output{
+  s3 {
+    codec => ["<%= @output_s3_codec %>"]
+    bucket => ["<%= @output_s3_bucket %>"]
+<% if @input_s3_region -%>
+    region_endpoint => "<%= @input_s3_region %>"
+<% end -%>
+  }
+}

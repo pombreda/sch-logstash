@@ -1,0 +1,12 @@
+input {
+  s3 {
+    bucket => ["<%= @input_s3_bucket %>"]
+<% if @input_s3_delete_after_read -%>
+    delete => True
+<% end -%>
+    type => "<%= @input_s3_type %>"
+<% if @input_s3_region -%>
+    region_endpoint => "<%= @input_s3_region %>"
+<% end -%>
+  }
+}

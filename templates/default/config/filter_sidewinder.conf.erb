@@ -1,0 +1,57 @@
+filter {
+  #if [type] == "<%= @type %>" {
+    grok {
+        patterns_dir => '/opt/logstash/server/etc/patterns'
+        match => [
+          'message', '%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}']
+        add_field => [ "received_at", "%{@timestamp}" ]
+        add_field => [ "received_from", "%{host}" ]
+    }
+
+    if !("_grokparsefailure" in [tags]) {
+      kv {
+        field_split => ','
+        source => 'syslog_message'
+      }
+
+      #replace the timestamp with the origin time from the FW (accept either v7 or v8 formats)
+      date {
+        match => [ 
+          "date", "MMM  d HH:mm:ss YYYY z", "MMM dd HH:mm:ss YYYY z", "YYYY-MM-dd HH:mm:ss Z" ] 
+      }
+
+      #if we found a start time for a net session, transform that to a proper datetime field as well
+      date {
+        target => 'start_time'
+        match => [ 
+          "start_time", "E MMM d HH:mm:ss YYYY", "E MMM  d HH:mm:ss YYYY", "MMM  d HH:mm:ss YYYY z", "MMM dd HH:mm:ss YYYY z", "YYYY-MM-dd HH:mm:ss Z" ] 
+      }
+    }
+
+  if !("_grokparsefailure" in [tags]) {
+      mutate {
+        replace => [ 
+          "host", "%{hostname}",
+          "message", "%{syslog_message}" ]
+        rename => [
+          'srcburb', 'srczone',
+          'dstburb', 'dstzone' ]
+        convert => [
+          'srcport', 'integer',
+          'dstport', 'integer',
+          'bytes_written_to_client', 'integer',
+          'bytes_written_to_server','integer',
+          'protocol', 'integer' ]
+        remove_field => [
+          'date',
+          'message' ]
+      }
+  }
+  mutate {
+    remove_field => [ 
+      "syslog_timestamp", 
+      "syslog_hostname", 
+      "syslog_message"]
+  }
+
+}
