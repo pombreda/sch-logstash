@@ -1,6 +1,6 @@
 #
-# Cookbook Name:: wrapper-logstash
-# Recipe:: default
+# Cookbook Name:: sch-logstash
+# Recipe:: server
 #
 # Copyright (C) 2014 David F. Severski
 # 
@@ -25,15 +25,6 @@
 #
 
 name = 'server'
-
-#force override our attributes (or attempt to anyways)
-#attributes = node['logstash']['instance'][name]
-node.force_override['logstash']['instance']['server']['config_templates'] = {}
-node.force_override['logstash']['instance']['server']['config_templates'] = {
-  'input_redis' => 'config/input_redis.conf.erb',
-  'filter_sidewinder' => 'config/filter_sidewinder.conf.erb',
-  'output_elasticsearch' => 'config/output_elasticsearch.conf.erb'
-}
 
 # create the server instance
 logstash_instance name do

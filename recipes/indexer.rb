@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: wrapper-logstash
+# Cookbook Name:: sch-logstash
 # Recipe:: indexer
 #
 # Copyright (C) 2014 David F. Severski
@@ -27,39 +27,44 @@
 name = 'server'
 
 #clear out the default config templates
-attributes = node['logstash']['instance'][name]
-node.normal['logstash']['instance'][name]['config_templates'].keys.each do |k|
-  node.normal['logstash']['instance'][name]['config_templates'].delete(k)
-end
+#attributes = node['logstash']['instance'][name]
+#node.normal['logstash']['instance'][name]['config_templates'].keys.each do |k|
+#  node.normal['logstash']['instance'][name]['config_templates'].delete(k)
+#end
 
-node.force_override['logstash']['instance']['server']['config_templates'] = {
-  'input_redis' => 'config/input_redis.conf.erb',
-  'filter_sidewinder' => 'config/filter_sidewinder.conf.erb',
-  'output_elasticsearch' => 'config/output_elasticsearch.conf.erb'
-}
+#node.force_override['logstash']['instance']['server']['config_templates'] = {
+#  'input_redis' => 'config/input_redis.conf.erb',
+#  'filter_sidewinder' => 'config/filter_sidewinder.conf.erb',
+#  'output_elasticsearch' => 'config/output_elasticsearch.conf.erb'
+#}
 
 # create the server instance
 logstash_instance name do
   action            :create
 end
 
+es_ip = service_ip(name, 'elasticsearch')
+
 # enable and start the service
 logstash_service name do
   action      [:enable, :start]
 end
 
-es_ip = service_ip(name, 'elasticsearch')
-
 # create our configuration files from the provided templates
 logstash_config name do
-  #Chef::Log.info("config vars: #{node['logstash']['instance']['server'].inspect}")
+  Chef::Log.info("config vars: #{node['logstash']['instance'].inspect}")
+  config_templates = {
+    'input_redis' => 'config/input_redis.conf.erb',
+    'filter_sidewinder' => 'config/filter_sidewinder.conf.erb',
+    'output_elasticsearch' => 'config/output_elasticsearch.conf.erb'
+  }
   action [:create]
   variables(
       elasticsearch_ip: "10.0.0.41",
       elasticsearch_embedded: false,
       elasticsearch_template: "/opt/logstash/server/etc/elasticsearch_template.json",
-      elasticsearch_cluster: "elkrun"
-      elasticsearch_protocol: "http"
+      elasticsearch_cluster: "elkrun",
+      elasticsearch_protocol: "http",
       input_redis_host: "10.0.0.21",
       input_redis_datatype: "list",
       input_redis_type: "sidewinder"

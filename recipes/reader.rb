@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: wrapper-logstash
+# Cookbook Name:: sch-logstash
 # Recipe:: reader
 #
 # Copyright (C) 2014 David F. Severski
@@ -32,8 +32,9 @@ node.normal['logstash']['instance'][name]['config_templates'].keys.each do |k|
   node.normal['logstash']['instance'][name]['config_templates'].delete(k)
 end
 
+#  'input_file' => 'config/input_file.conf.erb',
 node.force_override['logstash']['instance']['server']['config_templates'] = {
-  'input_file' => 'config/input_file.conf.erb',
+  'input_s3' => 'config/input_s3.conf.erb',
   'output_redis' => 'config/output_redis.conf.erb'
 }
 
@@ -60,6 +61,9 @@ logstash_config name do
     input_file_name: "/vagrant/logs/13*",
     input_file_type: "sidewinder",
     input_file_position: "beginning",
+    input_s3_bucket: "log-inbox.elk.sch",
+    input_s3_delete_after_read: true,
+    input_s3_region: "us-west-2",
     output_redis_datatype: "list",
     output_redis_host: "10.0.0.21"
   )
