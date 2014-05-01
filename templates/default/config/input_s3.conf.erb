@@ -1,10 +1,13 @@
 input {
   s3 {
     bucket => ["<%= @input_s3_bucket %>"]
+    credentials => ["<%= @input_s3_bucket_access_key_id %>", "<%= @input_s3_bucket_secret_access_key %>"]
 <% if @input_s3_delete_after_read -%>
-    delete => True
+    delete => true
 <% end -%>
+<% if @input_s3_type -%>
     type => "<%= @input_s3_type %>"
+<% end -%>
 <% if @input_s3_region -%>
     region_endpoint => "<%= @input_s3_region %>"
 <% end -%>

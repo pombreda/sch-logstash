@@ -55,17 +55,19 @@ logstash_config name do
   #Chef::Log.info("config vars: #{node['logstash']['instance']['server'].inspect}")
   action [:create]
   variables(
-    elasticsearch_ip: es_ip,
-    elasticsearch_embedded: false,
-    input_file_exclude: "*.gz",
-    input_file_name: "/vagrant/logs/13*",
-    input_file_type: "sidewinder",
-    input_file_position: "beginning",
-    input_s3_bucket: "log-inbox.elk.sch",
-    input_s3_delete_after_read: true,
-    input_s3_region: "us-west-2",
-    output_redis_datatype: "list",
-    output_redis_host: "10.0.0.21"
+    elasticsearch_ip: 								es_ip,
+    elasticsearch_embedded: 					false,
+    input_file_exclude: 							"*.gz",
+    input_file_name: 									"/vagrant/logs/13*",
+    input_file_type: 									"sidewinder",
+    input_file_position: 							"beginning",
+    input_s3_bucket: 									"log-inbox.elk.sch",
+    input_s3_delete_after_read: 			true,
+    input_s3_region: 									"us-west-2",
+    input_s3_bucket_access_key_id: 		node['logstash']['instance']['server']['aws_access_key_id'],
+    input_s3_bucket_secret_access_key: node['logstash']['instance']['server']['aws_secret_access_key'],
+    output_redis_datatype: 						"list",
+    output_redis_host: 								"10.0.0.21"
   )
 end
 
