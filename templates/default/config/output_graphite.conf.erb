@@ -1,0 +1,8 @@
+output {
+  graphite {
+    host => "<%= @output_graphite_host %>"
+    metrics => [ 
+      "events.%{host}.rate_1m", "%{events.1m}",
+      "events.%{host}.count",   "%{events.count}" ]
+  }
+}

@@ -44,6 +44,12 @@ logstash_instance name do
 end
 
 es_ip = service_ip(name, 'elasticsearch')
+my_config_templates =  = {
+    'input_redis' => 'config/input_redis.conf.erb',
+    'filter_sidewinder' => 'config/filter_sidewinder.conf.erb',
+    'output_elasticsearch' => 'config/output_elasticsearch.conf.erb'
+}
+
 
 # enable and start the service
 logstash_service name do
@@ -52,12 +58,8 @@ end
 
 # create our configuration files from the provided templates
 logstash_config name do
-  Chef::Log.info("config vars: #{node['logstash']['instance'].inspect}")
-  config_templates = {
-    'input_redis' => 'config/input_redis.conf.erb',
-    'filter_sidewinder' => 'config/filter_sidewinder.conf.erb',
-    'output_elasticsearch' => 'config/output_elasticsearch.conf.erb'
-  }
+  Chef::Log.debug("config vars: #{node['logstash']['instance'].inspect}")
+  templates my_config_templates
   action [:create]
   variables(
       elasticsearch_ip: "10.0.0.41",

@@ -27,16 +27,12 @@
 name = 'server'
 
 #clear out the default config templates
-attributes = node['logstash']['instance'][name]
-node.normal['logstash']['instance'][name]['config_templates'].keys.each do |k|
-  node.normal['logstash']['instance'][name]['config_templates'].delete(k)
-end
+#attributes = node['logstash']['instance'][name]
+#node.normal['logstash']['instance'][name]['config_templates'].keys.each do |k|
+#  node.normal['logstash']['instance'][name]['config_templates'].delete(k)
+#end
 
-#  'input_file' => 'config/input_file.conf.erb',
-node.force_override['logstash']['instance']['server']['config_templates'] = {
-  'input_s3' => 'config/input_s3.conf.erb',
-  'output_redis' => 'config/output_redis.conf.erb'
-}
+# set the templates we want to use, for either cloud or local mode
 
 # create the server instance
 logstash_instance name do
@@ -48,17 +44,34 @@ logstash_service name do
   action      [:enable, :start]
 end
 
+if node.attribute?('cloud') && node['cloud']['provider'] == "ec2"
+  my_config_templates = {
+    'input_s3' => 'config/input_s3.conf.erb',
+    'filter_metrics' => 'config/filter_metrics.conf.erb',
+    'output_redis' => 'config/output_redis.conf.erb',
+    'output_graphite' => 'config/output_graphite.conf.erb'
+  }
+else
+  my_config_templates = {
+    'input_file' => 'config/input_file.conf.erb',
+    'filter_metrics' => 'config/filter_metrics.conf.erb',
+    'output_redis' => 'config/output_redis.conf.erb',
+    'output_graphite' => 'config/output_graphite.conf.erb'
+  }
+end
+
 es_ip = service_ip(name, 'elasticsearch')
 
 # create our configuration files from the provided templates
 logstash_config name do
-  #Chef::Log.info("config vars: #{node['logstash']['instance']['server'].inspect}")
+  Chef::Log.debug("config vars: #{node['logstash']['instance']['server'].inspect}")
+  templates my_config_templates
   action [:create]
   variables(
     elasticsearch_ip: 								es_ip,
     elasticsearch_embedded: 					false,
     input_file_exclude: 							"*.gz",
-    input_file_name: 									"/vagrant/logs/13*",
+    input_file_name: 									"/vagrant_data/13*",
     input_file_type: 									"sidewinder",
     input_file_position: 							"beginning",
     input_s3_bucket: 									"log-inbox.elk.sch",
@@ -67,7 +80,8 @@ logstash_config name do
     input_s3_bucket_access_key_id: 		node['logstash']['instance']['server']['aws_access_key_id'],
     input_s3_bucket_secret_access_key: node['logstash']['instance']['server']['aws_secret_access_key'],
     output_redis_datatype: 						"list",
-    output_redis_host: 								"10.0.0.21"
+    output_redis_host: 								"10.0.0.21",
+    output_graphite_host: 						"10.0.0.51"
   )
 end
 
