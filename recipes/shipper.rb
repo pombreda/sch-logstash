@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sch-logstash
-# Recipe:: reader
+# Recipe:: shipper
 #
 # Copyright (C) 2014 David F. Severski
 # 
@@ -70,6 +70,7 @@ logstash_config name do
   variables(
     elasticsearch_ip: 								es_ip,
     elasticsearch_embedded: 					false,
+    logstash_host:										node['hostname'],
     input_file_exclude: 							"*.gz",
     input_file_name: 									"/vagrant_data/13*",
     input_file_type: 									"sidewinder",
