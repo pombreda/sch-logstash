@@ -1,8 +1,8 @@
 input {
   redis {
     host => ["<%= @input_redis_host %>"]
-    data_type => ["<%= @input_redis_datatype %>"]
-    type => ["<%= @input_redis_type %>"]
-    key => 'logstash'
+    data_type => "<%= @input_redis_datatype %>"
+    type => "<%= @input_redis_type %>"
+    key => "logstash"
   }
 }

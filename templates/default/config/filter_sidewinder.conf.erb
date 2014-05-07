@@ -1,5 +1,5 @@
 filter {
-  #if [type] == "<%= @type %>" {
+  if [type] == "sidewinder" {
     grok {
         patterns_dir => '/opt/logstash/server/etc/patterns'
         match => [
@@ -28,17 +28,17 @@ filter {
       }
     }
 
-  if !("_grokparsefailure" in [tags]) {
+    if !("_grokparsefailure" in [tags]) {
       mutate {
         replace => [ 
-          "host", "%{hostname}",
-          "message", "%{syslog_message}" ]
+          "host", 		"%{hostname}",
+          "message", 	"%{syslog_message}" ]
         rename => [
-          'srcburb', 'srczone',
-          'dstburb', 'dstzone' ]
+          'srcburb', 	'srczone',
+          'dstburb', 	'dstzone' ]
         convert => [
-          'srcport', 'integer',
-          'dstport', 'integer',
+          'srcport', 	'integer',
+          'dstport', 	'integer',
           'bytes_written_to_client', 'integer',
           'bytes_written_to_server','integer',
           'protocol', 'integer' ]
@@ -46,12 +46,12 @@ filter {
           'date',
           'message' ]
       }
+    }
+    mutate {
+      remove_field => [ 
+        "syslog_timestamp", 
+        "syslog_hostname", 
+        "syslog_message"]
+    }
   }
-  mutate {
-    remove_field => [ 
-      "syslog_timestamp", 
-      "syslog_hostname", 
-      "syslog_message"]
-  }
-
 }

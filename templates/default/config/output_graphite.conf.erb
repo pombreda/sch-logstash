@@ -1,8 +1,12 @@
 output {
-  graphite {
-    host => "<%= @output_graphite_host %>"
-    metrics => [ 
-      "events.%{host}.rate_1m", "%{events.1m}",
-      "events.%{host}.count",   "%{events.count}" ]
+    if "metric" in [tags] {
+    graphite {
+      host => "<%= @output_graphite_host %>"
+      metrics => [ 
+        "events.<%= @logstash_host %>.rate_1m", "%{events.rate_1m}",
+        "events.<%= @logstash_host %>.rate_5m", "%{events.rate_5m}",
+        "events.<%= @logstash_host %>.rate_15m", "%{events.rate_15m}",
+        "events.<%= @logstash_host%>.count",   "%{events.count}" ]
+    }
   }
 }

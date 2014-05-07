@@ -1,7 +1,9 @@
 output {
-  redis {
-    data_type => "<%= @output_redis_datatype %>"
-    host => ["<%= @output_redis_host %>"]
-    key => 'logstash'
+  if "metric" not in [tags] {
+    redis {
+      data_type => "<%= @output_redis_datatype %>"
+      host => ["<%= @output_redis_host %>"]
+      key => "logstash"
+    }
   }
 }
