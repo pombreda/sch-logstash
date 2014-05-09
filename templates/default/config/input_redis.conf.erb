@@ -4,5 +4,6 @@ input {
     data_type => "<%= @input_redis_datatype %>"
     type => "<%= @input_redis_type %>"
     key => "logstash"
+    threads => "<%= @redis_workers %>"
   }
 }

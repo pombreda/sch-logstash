@@ -4,6 +4,7 @@ output {
       data_type => "<%= @output_redis_datatype %>"
       host => ["<%= @output_redis_host %>"]
       key => "logstash"
+      workers => <%= @redis_workers %>
     }
   }
 }

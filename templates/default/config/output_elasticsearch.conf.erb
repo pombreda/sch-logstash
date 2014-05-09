@@ -1,20 +1,22 @@
 output {
-  elasticsearch {
-<% if @elasticsearch_protocol -%>
-    protocol => "<%= @elasticsearch_protocol %>"
-<% end -%>
-<% if @elasticsearch_cluster -%>
-    cluster => "<%= @elasticsearch_cluster %>"
-<% end -%>
-<% if @elasticsearch_ip -%>
-    host => "<%= @elasticsearch_ip %>"
-<% end -%>
-<% if @elasticsearch_embedded -%>
-    embedded => true
-<% end -%>
-<% if @elasticsearch_template -%>
-    template => "<%= @elasticsearch_template %>"
-    template_overwrite => true
-<% end -%>
+  if "metric" not in [tags] {
+    elasticsearch {
+  <% if @elasticsearch_protocol -%>
+      protocol => "<%= @elasticsearch_protocol %>"
+  <% end -%>
+  <% if @elasticsearch_cluster -%>
+      cluster => "<%= @elasticsearch_cluster %>"
+  <% end -%>
+  <% if @elasticsearch_ip -%>
+      host => "<%= @elasticsearch_ip %>"
+  <% end -%>
+  <% if @elasticsearch_embedded -%>
+      embedded => true
+  <% end -%>
+  <% if @elasticsearch_template -%>
+      template => "<%= @elasticsearch_template %>"
+      template_overwrite => true
+  <% end -%>
+    }
   }
 }

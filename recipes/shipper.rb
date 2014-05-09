@@ -82,7 +82,8 @@ logstash_config name do
     input_s3_bucket_secret_access_key: node['logstash']['instance']['server']['aws_secret_access_key'],
     output_redis_datatype: 						"list",
     output_redis_host: 								"10.0.0.21",
-    output_graphite_host: 						"10.0.0.51"
+    output_graphite_host: 						"10.0.0.51",
+    redis_workers:										node['cpu']['total'] * 2
   )
 end
 

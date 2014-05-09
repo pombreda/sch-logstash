@@ -44,10 +44,12 @@ logstash_instance name do
 end
 
 es_ip = service_ip(name, 'elasticsearch')
-my_config_templates =  = {
+my_config_templates = {
     'input_redis' => 'config/input_redis.conf.erb',
     'filter_sidewinder' => 'config/filter_sidewinder.conf.erb',
-    'output_elasticsearch' => 'config/output_elasticsearch.conf.erb'
+    'filter_metrics' => 'config/filter_metrics.conf.erb',
+    'output_elasticsearch' => 'config/output_elasticsearch.conf.erb',
+    'output_graphite' => 'config/output_graphite.conf.erb'
 }
 
 
@@ -62,14 +64,18 @@ logstash_config name do
   templates my_config_templates
   action [:create]
   variables(
-      elasticsearch_ip: "10.0.0.41",
+      elasticsearch_ip: 			"10.0.0.41",
       elasticsearch_embedded: false,
       elasticsearch_template: "/opt/logstash/server/etc/elasticsearch_template.json",
       elasticsearch_cluster: "elkrun",
       elasticsearch_protocol: "http",
-      input_redis_host: "10.0.0.21",
-      input_redis_datatype: "list",
-      input_redis_type: "sidewinder"
+      logstash_host:					node['hostname'],
+      input_redis_host: 			"10.0.0.21",
+      input_redis_datatype: 	"list",
+      input_redis_type: 			"sidewinder",
+      output_graphite_host: 						"10.0.0.51",
+      redis_workers:										node['cpu']['total'] * 2
+
   )
 end
 
