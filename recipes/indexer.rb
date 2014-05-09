@@ -38,12 +38,15 @@ name = 'server'
 #  'output_elasticsearch' => 'config/output_elasticsearch.conf.erb'
 #}
 
+# set the number of workers threads to the number of cpus
+node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
+
 # create the server instance
 logstash_instance name do
   action            :create
 end
 
-es_ip = service_ip(name, 'elasticsearch')
+es_ip = ::Logstash.service_ip(node, name, 'elasticsearch')
 my_config_templates = {
     'input_redis' => 'config/input_redis.conf.erb',
     'filter_sidewinder' => 'config/filter_sidewinder.conf.erb',

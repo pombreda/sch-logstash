@@ -32,7 +32,8 @@ name = 'server'
 #  node.normal['logstash']['instance'][name]['config_templates'].delete(k)
 #end
 
-# set the templates we want to use, for either cloud or local mode
+# set the number of workers threads to the number of cpus
+node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
 
 # create the server instance
 logstash_instance name do
@@ -44,6 +45,7 @@ logstash_service name do
   action      [:enable, :start]
 end
 
+# set the templates we want to use, for either cloud or local mode
 if node.attribute?('cloud') && node['cloud']['provider'] == "ec2"
   my_config_templates = {
     'input_s3' => 'config/input_s3.conf.erb',
@@ -60,15 +62,13 @@ else
   }
 end
 
-es_ip = service_ip(name, 'elasticsearch')
-
 # create our configuration files from the provided templates
 logstash_config name do
   Chef::Log.debug("config vars: #{node['logstash']['instance']['server'].inspect}")
   templates my_config_templates
   action [:create]
   variables(
-    elasticsearch_ip: 								es_ip,
+    elasticsearch_ip: 								::Logstash.service_ip(node, name, 'elasticsearch'),
     elasticsearch_embedded: 					false,
     logstash_host:										node['hostname'],
     input_file_exclude: 							"*.gz",
