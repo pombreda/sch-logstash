@@ -14,6 +14,25 @@
 	"mappings" : {
 		"_default_" : {
 			"_all" : {"enabled" : true},
+			"properties" : {
+				"@version": { "type": "string", "index": "not_analyzed" },
+				"src_geoip" : {
+					"type" : "object",
+					"dynamic": true,
+					"path": "full",
+					"properties" : {
+						"location" : { "type" : "geo_point" }
+					}
+				}
+				"dst_geoip" : {
+					"type" : "object",
+					"dynamic": true,
+					"path": "full",
+					"properties" : {
+						"location" : { "type" : "geo_point" }
+					}
+				}
+			},
 			"dynamic_templates" : [
 			{
 				"ip_fields" : {
@@ -39,18 +58,7 @@
 						}
 					}
 				}
-			} ],
-			"properties" : {
-				"@version": { "type": "string", "index": "not_analyzed" },
-				"geoip" : {
-					"type" : "object",
-					"dynamic": true,
-					"path": "full",
-					"properties" : {
-						"location" : { "type" : "geo_point" }
-					}
-				}
-			}
+			} ]
 		}
 	}
 }
