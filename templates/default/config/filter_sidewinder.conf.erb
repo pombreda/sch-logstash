@@ -26,9 +26,18 @@ filter {
         match => [ 
           "start_time", "E MMM d HH:mm:ss YYYY", "E MMM  d HH:mm:ss YYYY", "MMM  d HH:mm:ss YYYY z", "MMM dd HH:mm:ss YYYY z", "YYYY-MM-dd HH:mm:ss Z" ] 
       }
-    }
-
-    if !("_grokparsefailure" in [tags]) {
+      
+      #geocode source IP field
+      geoip {
+        source => 'srcip'
+        target => 'src_geoip'
+      }
+      
+      #geocode destination IP field
+      geoip {
+        source => 'dstip'
+        target => 'dst_geoip'
+      }
       mutate {
         replace => [ 
           "host", 										"%{hostname}",
@@ -45,6 +54,8 @@ filter {
         remove_field => [ 						'date', 'message' ]
       }
     }
+
+    #always do the following
     mutate {
       remove_field => [ 
         "syslog_timestamp", 

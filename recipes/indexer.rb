@@ -72,12 +72,13 @@ logstash_config name do
       elasticsearch_template: "/opt/logstash/server/etc/elasticsearch_template.json",
       elasticsearch_cluster: "elkrun",
       elasticsearch_protocol: "http",
+      elasticsearch_workers:	node['cpu']['total'],
       logstash_host:					node['hostname'],
       input_redis_host: 			"10.0.0.21",
       input_redis_datatype: 	"list",
       input_redis_type: 			"sidewinder",
       output_graphite_host: 						"10.0.0.51",
-      redis_workers:										node['cpu']['total'] * 2
+      redis_workers:					1
 
   )
 end

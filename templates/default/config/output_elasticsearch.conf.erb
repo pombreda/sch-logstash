@@ -17,6 +17,7 @@ output {
       template => "<%= @elasticsearch_template %>"
       template_overwrite => true
   <% end -%>
+      workers => <%= @elasticsearch_workers %>
     }
   }
 }

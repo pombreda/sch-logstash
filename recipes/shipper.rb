@@ -83,7 +83,7 @@ logstash_config name do
     output_redis_datatype: 						"list",
     output_redis_host: 								"10.0.0.21",
     output_graphite_host: 						"10.0.0.51",
-    redis_workers:										node['cpu']['total'] * 2
+    redis_workers:										node['cpu']['total']
   )
 end
 
