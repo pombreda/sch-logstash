@@ -1,6 +1,9 @@
 input {
   s3 {
     bucket => ["<%= @input_s3_bucket %>"]
+<% if @input_s3_prefix -%>
+    prefix => "<%= @input_s3_prefix %>"]
+<% end -%>
     credentials => ["<%= @input_s3_bucket_access_key_id %>", "<%= @input_s3_bucket_secret_access_key %>"]
 <% if @input_s3_delete_after_read -%>
     delete => true

@@ -77,7 +77,7 @@ logstash_config name do
       input_redis_host: 			"10.0.0.21",
       input_redis_datatype: 	"list",
       input_redis_type: 			"sidewinder",
-      output_graphite_host: 						"10.0.0.51",
+      output_graphite_host: 	"10.0.0.51",
       redis_workers:					1
 
   )
