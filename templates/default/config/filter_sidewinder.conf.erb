@@ -31,12 +31,18 @@ filter {
       geoip {
         source => 'srcip'
         target => 'src_geoip'
+<% if @geoip_database -%>
+        database => '<%= @geoip_database %>'
+<% end -%>
       }
       
       #geocode destination IP field
       geoip {
         source => 'dstip'
         target => 'dst_geoip'
+<% if @geoip_database -%>
+        database => '<%= @geoip_database %>'
+<% end -%>
       }
       mutate {
         replace => [ 

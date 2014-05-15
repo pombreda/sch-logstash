@@ -41,6 +41,30 @@ name = 'server'
 # set the number of workers threads to the number of cpus
 node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
 
+# fetch our licensed version of MaxMind city DB
+src_url = "https://download.maxmind.com/app/geoip_download?edition_id=133&suffix=tar.gz&license_key=#{node['logstash']['instance'][name]['maxmind_license_key']}"
+src_filename = "GeoIPCity.tar.gz"
+src_filepath = "#{Chef::Config['file_cache_path']}/#{src_filename}"
+extract_path = "/opt/logstash/#{name}/vendor/geoip/MaxMind"
+
+remote_file src_filepath do
+  source src_url
+  owner 'root'
+  group 'root'
+  mode 00644
+end
+
+bash 'extract_module' do
+  cwd ::File.dirname(src_filepath)
+  code <<-EOH
+    mkdir -p #{extract_path}
+    tar xzf #{src_filename} -C #{extract_path}
+    chown -R logstash:logstash #{extract_path}
+    mv #{extract_path}/*/* #{extract_path}/..
+    EOH
+  not_if { ::File.exists?(extract_path) }
+end
+
 # create the server instance
 logstash_instance name do
   action            :create
@@ -55,12 +79,6 @@ my_config_templates = {
     'output_graphite' => 'config/output_graphite.conf.erb'
 }
 
-
-# enable and start the service
-logstash_service name do
-  action      [:enable, :start]
-end
-
 # create our configuration files from the provided templates
 logstash_config name do
   Chef::Log.debug("config vars: #{node['logstash']['instance'].inspect}")
@@ -69,7 +87,7 @@ logstash_config name do
   variables(
       elasticsearch_ip: 			"10.0.0.41",
       elasticsearch_embedded: false,
-      elasticsearch_template: "/opt/logstash/server/etc/elasticsearch_template.json",
+      elasticsearch_template: "/opt/logstash/#{name}/etc/elasticsearch_template.json",
       elasticsearch_cluster: "elkrun",
       elasticsearch_protocol: "http",
       elasticsearch_workers:	node['cpu']['total'],
@@ -78,7 +96,8 @@ logstash_config name do
       input_redis_datatype: 	"list",
       input_redis_type: 			"sidewinder",
       output_graphite_host: 	"10.0.0.51",
-      redis_workers:					1
+      redis_workers:					1,
+      geoip_database:					"/opt/logstash/#{name}/vendor/geoip/GeoIPCity.dat"
 
   )
 end
@@ -93,4 +112,10 @@ end
 # create our custom patterns
 logstash_pattern name do
   action [:create]
+end
+
+
+# enable and start the service
+logstash_service name do
+  action      [:enable, :start]
 end
