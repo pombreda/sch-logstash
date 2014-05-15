@@ -5,6 +5,7 @@ output {
       host => ["<%= @output_redis_host %>"]
       key => "logstash"
       workers => <%= @redis_workers %>
+      batch_events => <%= @redis_batch_size %>
     }
   }
 }

@@ -76,12 +76,14 @@ logstash_config name do
     input_file_type: 									"sidewinder",
     input_file_position: 							"beginning",
     input_s3_bucket: 									"log-inbox.elk.sch",
+    input_s3_prefix: 									"2-ELK/input",
     input_s3_delete_after_read: 			true,
     input_s3_region: 									"us-west-2",
     input_s3_bucket_access_key_id: 		node['logstash']['instance']['server']['aws_access_key_id'],
     input_s3_bucket_secret_access_key: node['logstash']['instance']['server']['aws_secret_access_key'],
     output_redis_datatype: 						"list",
     output_redis_host: 								"10.0.0.21",
+    redis_batch_size:									"1000",
     output_graphite_host: 						"10.0.0.51",
     redis_workers:										node['cpu']['total']
   )
