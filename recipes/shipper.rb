@@ -85,7 +85,9 @@ logstash_config name do
     output_redis_host: 								"10.0.0.21",
     redis_batch_size:									"1000",
     output_graphite_host: 						"10.0.0.51",
-    redis_workers:										node['cpu']['total']
+    redis_workers:										node['cpu']['total'],
+    redis_congestion_threshold:				20000000,
+    redis_congetsion_interval:				60
   )
 end
 

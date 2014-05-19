@@ -6,6 +6,12 @@ output {
       key => "logstash"
       workers => <%= @redis_workers %>
       batch_events => <%= @redis_batch_size %>
+<% if @redis_congestion_threshold -%>
+      congestion_threshold => <%= @redis_congestion_threshold %>
+<% end -%>
+<% if @redis_congestion_interval -%>
+      congestion_interval => <%= @redis_congestion_interval %>
+<% end -%>
     }
   }
 }
