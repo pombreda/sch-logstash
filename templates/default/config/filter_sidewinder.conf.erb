@@ -3,7 +3,7 @@ filter {
     grok {
         patterns_dir => '/opt/logstash/server/etc/patterns'
         match => [
-          'message', '%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}']
+          'message', '^%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}']
         add_field => [ "received_at", "%{@timestamp}" ]
         add_field => [ "received_from", "%{host}" ]
     }
