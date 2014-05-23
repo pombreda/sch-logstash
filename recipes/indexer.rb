@@ -85,7 +85,7 @@ logstash_config name do
   templates my_config_templates
   action [:create]
   variables(
-      elasticsearch_ip: 			"10.0.0.41",
+      elasticsearch_ip: 			"internal-elasticsearch-lb-532683521.us-west-2.elb.amazonaws.com",
       elasticsearch_embedded: false,
       elasticsearch_template: "/opt/logstash/#{name}/etc/elasticsearch_template.json",
       elasticsearch_cluster: "elkrun",
