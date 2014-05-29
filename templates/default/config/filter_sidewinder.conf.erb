@@ -59,6 +59,14 @@ filter {
           'protocol', 								'integer' ]
         remove_field => [ 						'date', 'message' ]
       }
+
+      #add aliases for bytes_written fields
+      grok {
+        add_field => [ "bytes_sent", "%{bytes_written_to_server}" ]
+        add_field => [ "bytes_rcvd", "%{bytes_written_to_client}" ]
+        add_field => [ "event_type", "%{type}" ]
+      }
+
     }
 
     #always do the following
