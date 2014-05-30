@@ -38,6 +38,16 @@
 				}
 			},
 			{
+				"byte_fields" : {
+					"match" : "bytes*",
+					"mapping" : {
+						"type" : "long",
+						"fields" : {
+							"raw" : {"type": "long", "index" : "not_analyzed", "ignore_above": 256}
+						}
+					}
+				}
+			},			{
 				"string_fields" : {
 					"match" : "*",
 					"match_mapping_type" : "string",
