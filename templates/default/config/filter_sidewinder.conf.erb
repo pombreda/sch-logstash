@@ -8,7 +8,9 @@ filter {
     }
     #if we received a host field (file inputs, primarily), record that
     if [host] {
-      add_field => [ "received_from", "%{host}" ]
+      mutate {
+        add_field => [ "received_from", "%{host}" ]
+      }
     }
 
     if ("_grokparsefailure" in [tags]) {
