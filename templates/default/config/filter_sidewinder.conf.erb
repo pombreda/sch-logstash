@@ -1,87 +1,97 @@
 filter {
   if [type] == "sidewinder" {
     grok {
-        patterns_dir => '/opt/logstash/server/etc/patterns'
-        match => [
-          'message', '^%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}']
-        add_field => [ "received_at", "%{@timestamp}" ]
-        add_field => [ "received_from", "%{host}" ]
+      patterns_dir => '/opt/logstash/server/etc/patterns'
+      match => [
+        'message', '^%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}']
+      add_field => [ "received_at", "%{@timestamp}" ]
+    }
+    #if we received a host field (file inputs, primarily), record that
+    if [host] {
+      add_field => [ "received_from", "%{host}" ]
     }
 
-    if !("_grokparsefailure" in [tags]) {
-      #preserve the type field
-      mutate { add_field => ["temp_type", "%{type}" ] }
+    if ("_grokparsefailure" in [tags]) {
+      drop { }
+    }
 
-      #split out our CSV key-value fields
-      kv {
-        field_split => ','
-        source => 'syslog_message'
-      }
+    #preserve the type field
+    mutate { add_field => ["temp_type", "%{type}" ] }
 
-      # revert the type field
-      mutate { 
-        rename_field => [ "type", "event_type" ]
-        rename_field => [ "tmp_type", "type" ]
-      }
+    #split out our CSV key-value fields
+    kv {
+      field_split => ','
+      source => 'syslog_message'
+    }
 
-      #replace the timestamp with the origin time from the FW (accept either v7 or v8 formats)
-      date {
-        match => [ 
-          "date", "MMM  d HH:mm:ss YYYY z", "MMM dd HH:mm:ss YYYY z", "YYYY-MM-dd HH:mm:ss Z" ] 
-      }
+    # revert the type field
+    mutate { 
+      rename => [ "type", "event_type" ]
+      rename => [ "temp_type", "type" ]
+    }
 
-      #if we found a start time for a net session, transform that to a proper datetime field as well
-      date {
-        target => 'start_time'
-        match => [ 
-          "start_time", "E MMM d HH:mm:ss YYYY", "E MMM  d HH:mm:ss YYYY", "MMM  d HH:mm:ss YYYY z", "MMM dd HH:mm:ss YYYY z", "YYYY-MM-dd HH:mm:ss Z" 
-        ] 
-      }
-      
-      #geocode source IP field
-      geoip {
-        source => 'srcip'
-        target => 'src_geoip'
+    #replace the timestamp with the origin time from the FW (accept either v7 or v8 formats)
+    date {
+      match => [ "date", "MMM  d HH:mm:ss YYYY z", "MMM dd HH:mm:ss YYYY z", "YYYY-MM-dd HH:mm:ss Z" ] 
+    }
+
+    #if we found a start time for a net session, transform that to a proper datetime field as well
+    date {
+      target => 'start_time'
+      match => [ 
+        "start_time", "E MMM d HH:mm:ss YYYY", "E MMM  d HH:mm:ss YYYY", "MMM  d HH:mm:ss YYYY z", "MMM dd HH:mm:ss YYYY z", "YYYY-MM-dd HH:mm:ss Z" 
+      ]
+    }
+
+    #geocode source IP field
+    geoip {
+      source => 'srcip'
+      target => 'src_geoip'
 <% if @geoip_database -%>
-        database => '<%= @geoip_database %>'
+      database => '<%= @geoip_database %>'
 <% end -%>
-      }
+    }
 
-      #geocode destination IP field
-      geoip {
-        source => 'dstip'
-        target => 'dst_geoip'
+    #geocode destination IP field
+    geoip {
+      source => 'dstip'
+      target => 'dst_geoip'
 <% if @geoip_database -%>
-        database => '<%= @geoip_database %>'
+      database => '<%= @geoip_database %>'
 <% end -%>
-      }
+    }
 
+    mutate {
+      replace => [ 
+        'host',                     "%{hostname}",
+        'message',                  "%{syslog_message}" ]
+      lowercase => ['host' ]
+      rename => [
+        'srcburb',                  'srczone',
+        'dstburb',                  'dstzone' ]
+      convert => [
+        'srcport',                  'integer',
+        'dstport',                  'integer',
+        'protocol',                 'integer' ]
+      remove_field => [ 'date', 'message' ]
+    }
+
+    #clean up bytes out fields
+    if [bytes_written_to_server] {
       mutate {
-        replace => [ 
-          "host", 										"%{hostname}",
-          "message", 									"%{syslog_message}" ]
-        lowercase => [ 'host' ]
-        rename => [
-          'srcburb', 									'srczone',
-          'dstburb', 									'dstzone' ]
-        convert => [
-          'srcport', 									'integer',
-          'dstport', 									'integer',
-          'protocol', 								'integer' ]
-        remove_field => [ 						'date', 'message' ]
-      }
-
-      #clean up bytes out fields
-      if [bytes_written_to_server] {
         convert => [ 'bytes_written_to_server', 'integer' ]
         add_field => [ 'bytes_sent', "%{bytes_written_to_server}" ]
       }
+      mutate { convert => [ 'bytes_sent', 'integer' ] }
+    }
 
-      #clean up bytes in fields
-      if [bytes_written_to_client] {
-        convert => [ 'bytes_written_to_client, 'integer' ]
+    #clean up bytes in fields
+    if [bytes_written_to_client] {
+      mutate {
+        convert =>   [ 'bytes_written_to_client', 'integer' ]
         add_field => ['bytes_rcvd', "%{bytes_written_to_client}" ]
       }
+      mutate { convert => [ 'bytes_rcvd', 'integer' ] }
     }
 
     #always remove the following extraneous fields
@@ -89,7 +99,8 @@ filter {
       remove_field => [ 
         "syslog_timestamp", 
         "syslog_hostname", 
-        "syslog_message"]
+        "syslog_message"
+      ]
     }
   }
 }
