@@ -70,7 +70,8 @@ filter {
       lowercase => ['host' ]
       rename => [
         'srcburb',                  'srczone',
-        'dstburb',                  'dstzone' ]
+        'dstburb',                  'dstzone',
+        'attackburb',               'attackzone' ]
       convert => [
         'srcport',                  'integer',
         'dstport',                  'integer',
@@ -91,7 +92,7 @@ filter {
     if [bytes_written_to_client] {
       mutate {
         convert =>   [ 'bytes_written_to_client', 'integer' ]
-        add_field => ['bytes_rcvd', "%{bytes_written_to_client}" ]
+        add_field => [ 'bytes_rcvd', "%{bytes_written_to_client}" ]
       }
       mutate { convert => [ 'bytes_rcvd', 'integer' ] }
     }
