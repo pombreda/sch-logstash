@@ -1,4 +1,4 @@
-name             'wrapper-logstash'
+name             'sch-logstash'
 maintainer       'David F. Severski'
 maintainer_email 'davidski@deadheaven.com'
 license          'MIT'
