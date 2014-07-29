@@ -1,0 +1,69 @@
+#time_stamp "auth_user" src_ip status_code "req_line" "categories" "rep_level" "media_type" bytes_to_client "user_agent" "virus_name" "block_res"
+#[06/Jun/2014:23:04:47 -0700] "" 192.168.255.30 403 "CONNECT mtalk.google.com:5228 HTTP/1.1" "" "-" "" 3318 "" "" "10"
+#^\[%{HTTPDATE:syslog_timestamp}] "(%{USER:user})?" %{IP:srcip} %{NUMBER:status_code} "%{WORD:verb} (%{URIPROTO:http_proto}://)?(%{URIHOST:http_host})?(?:%{URIPATHPARAM:http_request})? HTTP/%{NUMBER:httpversion}" "(%{DATA:categories})?" "%{DATA:rep_level}" "(%{DATA:media_type})?" %{INT:bytes_sent} "%{DATA:user_agent}" "%{DATA:virus_name}" "%{DATA:block_res}"
+#^[%{HTTPDATE:syslog_timestamp}] "(%{USER:user})?" %{IP:srcip} %{NUMBER:status_code} "%{WORD:verb} (%{URIPROTO:http_proto}://)?(?:%{USER:http_user}(?::[^@]*)?@)?(?:%{URIHOST:http_host})?(?:%{URIPATHPARAM:http_request}) HTTP/%{number:httpversion"} "%{DATA:categories}" "%{INT:rep_level}" "%{DATA:media_type}" %{INT:bytes_sent} %{INT:bytes_recv} "%{DATA:user_agent}" "%{DATA:virus_name}" "%{DATA:block_res}"']
+filter {
+  if [type] == "webwasher" {
+    grok {
+      patterns_dir => '/opt/logstash/server/etc/patterns'
+      match => [
+        'message', '^\[%{HTTPDATE:time_stamp}] "(%{USER:user})?" %{IP:srcip} %{NUMBER:status_code} "%{WORD:verb} (%{URIPROTO:http_proto}://)?(%{URIHOST:http_host})?(?:%{URIPATHPARAM:http_request})? HTTP/%{NUMBER:httpversion}" "(%{DATA:categories})?" "%{DATA:rep_level}" "(%{DATA:media_type})?" %{INT:bytes_sent} "%{DATA:user_agent}" "%{DATA:virus_name}" "%{DATA:block_res}"']
+      add_field => [ "received_at", "%{@timestamp}" ]
+    }
+    #if we received a host field (file inputs, primarily), record that
+    if [host] {
+      mutate {
+        add_field => [ "received_from", "%{host}" ]
+      }
+    }
+
+    #if this is supposed to be a webproxy log but it doesn't parse, drop it
+    if ("_grokparsefailure" in [tags]) {
+      drop { }
+    }
+
+    #replace the timestamp with the origin time from the proxy
+    date {
+      match => [ "time_stamp", "d/MMM/YYYY:HH:mm:ss Z"  ] 
+    }
+
+    #match our user agent to something more useful (ua field)
+    useragent {
+      source => 'user_agent'
+      target => 'ua'
+    }
+
+    #geocode source IP field
+    geoip {
+      source => 'srcip'
+      target => 'src_geoip'
+<% if @geoip_database -%>
+      database => '<%= @geoip_database %>'
+<% end -%>
+    }
+
+    mutate {
+      replace => [ 
+        'host',                     "%{hostname}",
+        'message',                  "%{syslog_message}" ]
+      lowercase => ['host' ]
+      rename => [
+        'src_ip',                   'srcip' ]
+      remove_field => [ 'date', 'message' ]
+    }
+
+    #clean up bytes out fields
+    if [bytes_sent] {
+      mutate { convert => [ 'bytes_sent', 'integer' ] }
+    }
+
+    #always remove the following extraneous fields
+    mutate {
+      remove_field => [ 
+        "syslog_timestamp", 
+        "syslog_hostname", 
+        "syslog_message"
+      ]
+    }
+  }
+}
