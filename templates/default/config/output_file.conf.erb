@@ -1,0 +1,8 @@
+output {
+  if "metric" in [tags] {
+    file {
+      path => "/es/logs/event-rate-%{+YYYY-MM-dd}.txt"
+      message_format => "rate: %{[events].[rate_1m]}"
+    }
+  }
+}
