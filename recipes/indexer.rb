@@ -87,6 +87,7 @@ else
     #redis = search('node', 'role:redis').first
     #redis_ip = best_ip_for(redis)
     redis = node['opsworks']['layers']['redis']['instances'].first[1]
+    Chef::Log.warn("OpsWorks Redis layer reads: #{redis}")
     redis_ip = redis['private_ip']
 end
 
