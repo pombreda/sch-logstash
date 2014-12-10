@@ -84,8 +84,10 @@ my_config_templates = {
 if Chef::Config[:solo]
     redis_ip = "10.0.0.21"
 else
-    redis = search('node', 'role:redis').first
-    redis_ip = best_ip_for(redis)
+    #redis = search('node', 'role:redis').first
+    #redis_ip = best_ip_for(redis)
+    redis = node['opsworks']['layers']['redis']['instances'].first
+    redis_ip = redis['private_ip']
 end
 
 # create our configuration files from the provided templates
