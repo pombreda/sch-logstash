@@ -86,7 +86,7 @@ if Chef::Config[:solo]
 else
     #redis = search('node', 'role:redis').first
     #redis_ip = best_ip_for(redis)
-    redis = node['opsworks']['layers']['redis']['instances'].first
+    redis = node['opsworks']['layers']['redis']['instances'].first[1]
     redis_ip = redis['private_ip']
 end
 
