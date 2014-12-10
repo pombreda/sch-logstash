@@ -24,6 +24,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+include_recipe 'chef-sugar::default'
+
 name = 'server'
 
 #clear out the default config templates
@@ -62,6 +64,13 @@ else
   }
 end
 
+if Chef::Config[:solo]
+    redis_ip = "10.0.0.21"
+else
+    redis = search('node', 'role:redis').first
+    redis_ip = best_ip_for(redis)
+end
+
 # create our configuration files from the provided templates
 logstash_config name do
   Chef::Log.debug("config vars: #{node['logstash']['instance']['server'].inspect}")
@@ -82,7 +91,7 @@ logstash_config name do
     input_s3_bucket_access_key_id: 		node['logstash']['instance']['server']['aws_access_key_id'],
     input_s3_bucket_secret_access_key: node['logstash']['instance']['server']['aws_secret_access_key'],
     output_redis_datatype: 						"list",
-    output_redis_host: 								"10.0.0.21",
+    output_redis_host: 								redis_ip,
     redis_batch_size:									"1000",
     output_graphite_host: 						"10.0.0.51",
     redis_workers:										node['cpu']['total'],

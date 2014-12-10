@@ -24,6 +24,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+include_recipe 'chef-sugar::default'
+
 name = 'server'
 
 #clear out the default config templates
@@ -79,6 +81,13 @@ my_config_templates = {
     'output_graphite' => 'config/output_graphite.conf.erb'
 }
 
+if Chef::Config[:solo]
+    redis_ip = "10.0.0.21"
+else
+    redis = search('node', 'role:redis').first
+    redis_ip = best_ip_for(redis)
+end
+
 # create our configuration files from the provided templates
 logstash_config name do
   Chef::Log.debug("config vars: #{node['logstash']['instance'].inspect}")
@@ -92,7 +101,7 @@ logstash_config name do
       elasticsearch_protocol: "http",
       elasticsearch_workers:	node['cpu']['total'],
       logstash_host:					node['hostname'],
-      input_redis_host: 			"10.0.0.21",
+      input_redis_host: 			redis_ip,
       input_redis_datatype: 	"list",
       input_redis_type: 			"sidewinder",
       output_graphite_host: 	"10.0.0.51",
