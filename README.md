@@ -1,4 +1,6 @@
-# wrapper-logstash cookbook
+[![Build Status](https://secure.travis-ci.org/davidski/sch-logstash.png)](http://travis-ci.org/davidski/sch-logstash)
+
+# sch-logstash cookbook
 
 # Requirements
 
