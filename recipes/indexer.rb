@@ -72,6 +72,10 @@ logstash_instance name do
   action            :create
 end
 
+logstash_instance name do
+  action            :create
+end
+
 es_ip = ::Logstash.service_ip(node, name, 'elasticsearch')
 my_config_templates = {
     'input_redis' => 'config/input_redis.conf.erb',
@@ -112,6 +116,7 @@ logstash_config name do
       geoip_database:					"/opt/logstash/#{name}/vendor/geoip/GeoIPCity.dat"
 
   )
+  notifies :restart, "logstash_service[#{name}]"
 end
 
 # create custom ES index template
@@ -121,13 +126,12 @@ template "/opt/logstash/server/etc/elasticsearch_template.json" do
   group "logstash"
 end
 
-# create our custom patterns
-logstash_pattern name do
+logstash_plugins 'contrib" do
+  instance name
   action [:create]
 end
 
-
-# enable and start the service
-logstash_service name do
-  action      [:enable, :start]
+# create our custom patterns
+logstash_pattern name do
+  action [:create]
 end
