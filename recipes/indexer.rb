@@ -72,8 +72,8 @@ logstash_instance name do
   action            :create
 end
 
-logstash_instance name do
-  action            :create
+logstash_service name do
+  action            [:enable]
 end
 
 es_ip = ::Logstash.service_ip(node, name, 'elasticsearch')
