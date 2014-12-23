@@ -126,7 +126,7 @@ template "/opt/logstash/server/etc/elasticsearch_template.json" do
   group "logstash"
 end
 
-logstash_plugins 'contrib" do
+logstash_plugins "contrib" do
   instance name
   action [:create]
 end
