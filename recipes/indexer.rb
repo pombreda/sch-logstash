@@ -41,7 +41,7 @@ name = 'server'
 #}
 
 # set the number of workers threads to the number of cpus
-#node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
+node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
 
 # fetch our licensed version of MaxMind city DB
 src_url = "https://download.maxmind.com/app/geoip_download?edition_id=133&suffix=tar.gz&license_key=#{node['logstash']['instance'][name]['maxmind_license_key']}"
@@ -70,7 +70,7 @@ end
 # create the server instance
 logstash_instance name do
   action            :create
-  workers           node['cpu']['total']
+  #workers           node['cpu']['total']
 end
 
 logstash_service name do

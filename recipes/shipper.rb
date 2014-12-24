@@ -35,12 +35,12 @@ name = 'server'
 #end
 
 # set the number of workers threads to the number of cpus
-#node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
+node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
 
 # create the server instance
 logstash_instance name do
   action            :create
-  workers           node['cpu']['total']
+  #workers           node['cpu']['total']
 end
 
 # enable and start the service
