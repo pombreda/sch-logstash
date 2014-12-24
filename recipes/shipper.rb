@@ -35,16 +35,17 @@ name = 'server'
 #end
 
 # set the number of workers threads to the number of cpus
-node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
+#node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
 
 # create the server instance
 logstash_instance name do
   action            :create
+  workers           node['cpu']['total']
 end
 
 # enable and start the service
 logstash_service name do
-  action      [:enable, :start]
+  action      [:enable]
 end
 
 # set the templates we want to use, for either cloud or local mode
@@ -64,6 +65,7 @@ else
   }
 end
 
+# discovery for redis ip
 if Chef::Config[:solo]
     redis_ip = "10.0.0.21"
 else
@@ -71,6 +73,17 @@ else
     #redis_ip = best_ip_for(redis)
     redis = node['opsworks']['layers']['redis']['instances'].first[1]
     redis_ip = redis['private_ip']
+end
+
+# discovery for graphite IP
+if Chef::Config[:solo]
+    graphite_ip = "10.0.0.50"
+else
+    #kb = search('node', 'role:kb').first
+    #graphite_ip = best_ip_for(kb)
+    kb = node['opsworks']['layers']['kb']['instances'].first[1]
+    Chef::Log.warn("OpsWorks Kibana layer reads: #{kb}")
+    graphite_ip = kb['private_ip']
 end
 
 # create our configuration files from the provided templates
@@ -95,11 +108,12 @@ logstash_config name do
     output_redis_datatype: 						"list",
     output_redis_host: 								redis_ip,
     redis_batch_size:									"1000",
-    output_graphite_host: 						"10.0.0.51",
+    output_graphite_host: 						graphite_ip,
     redis_workers:										node['cpu']['total'],
     redis_congestion_threshold:				20000000,
     redis_congestion_interval:				60
   )
+  notifies :restart, "logstash_service[#{name}]"
 end
 
 logstash_plugins "contrib" do

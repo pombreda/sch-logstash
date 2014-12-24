@@ -41,7 +41,7 @@ name = 'server'
 #}
 
 # set the number of workers threads to the number of cpus
-node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
+#node.normal['logstash']['instance'][name]['workers'] = node['cpu']['total']
 
 # fetch our licensed version of MaxMind city DB
 src_url = "https://download.maxmind.com/app/geoip_download?edition_id=133&suffix=tar.gz&license_key=#{node['logstash']['instance'][name]['maxmind_license_key']}"
@@ -70,6 +70,7 @@ end
 # create the server instance
 logstash_instance name do
   action            :create
+  workers           node['cpu']['total']
 end
 
 logstash_service name do
@@ -85,6 +86,7 @@ my_config_templates = {
     'output_graphite' => 'config/output_graphite.conf.erb'
 }
 
+# discovery for redis IP
 if Chef::Config[:solo]
     redis_ip = "10.0.0.21"
 else
@@ -93,6 +95,17 @@ else
     redis = node['opsworks']['layers']['redis']['instances'].first[1]
     Chef::Log.warn("OpsWorks Redis layer reads: #{redis}")
     redis_ip = redis['private_ip']
+end
+
+# discovery for graphite IP
+if Chef::Config[:solo]
+    graphite_ip = "10.0.0.50"
+else
+    #kb = search('node', 'role:kb').first
+    #graphite_ip = best_ip_for(kb)
+    kb = node['opsworks']['layers']['kb']['instances'].first[1]
+    Chef::Log.warn("OpsWorks Kibana layer reads: #{kb}")
+    graphite_ip = kb['private_ip']
 end
 
 # create our configuration files from the provided templates
@@ -111,7 +124,7 @@ logstash_config name do
       input_redis_host: 			redis_ip,
       input_redis_datatype: 	"list",
       input_redis_type: 			"sidewinder",
-      output_graphite_host: 	"10.0.0.51",
+      output_graphite_host: 	graphite_ip,
       redis_workers:					1,
       geoip_database:					"/opt/logstash/#{name}/vendor/geoip/GeoIPCity.dat"
 
