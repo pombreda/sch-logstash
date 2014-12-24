@@ -73,10 +73,6 @@ logstash_instance name do
   #workers           node['cpu']['total']
 end
 
-logstash_service name do
-  action            [:enable]
-end
-
 es_ip = ::Logstash.service_ip(node, name, 'elasticsearch')
 my_config_templates = {
     'input_redis' => 'config/input_redis.conf.erb',
@@ -147,4 +143,9 @@ end
 # create our custom patterns
 logstash_pattern name do
   action [:create]
+end
+
+# enable the LS service
+logstash_service name do
+  action            [:enable]
 end
