@@ -102,6 +102,11 @@ logstash_config name do
   )
 end
 
+logstash_plugins "contrib" do
+  instance name
+  action [:create]
+end
+
 # create our custom patterns
 logstash_pattern name do
   action [:create]
